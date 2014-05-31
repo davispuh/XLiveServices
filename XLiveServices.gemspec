@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency 'httpi'
   spec.add_runtime_dependency 'multi_xml'
-  spec.add_runtime_dependency 'LiveIdentity', '>= 0.0.2'
+  spec.add_runtime_dependency 'LiveIdentity', '>= 0.0.3'
   spec.add_runtime_dependency 'savon'
   spec.add_runtime_dependency 'builder'
 
