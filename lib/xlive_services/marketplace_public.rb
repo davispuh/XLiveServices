@@ -28,6 +28,7 @@ module XLiveServices
         end
 
         def self.BuildOfferGUID(offerID, titleID=nil)
+            return offerID.to_s if offerID.to_s.match(/^[a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{12}$/i)
             titleID = offerID >> 32 if titleID.nil?
             offerID &= 0xffffffff
             "%08x-0000-4000-8000-0000%08x" % [offerID, titleID]
