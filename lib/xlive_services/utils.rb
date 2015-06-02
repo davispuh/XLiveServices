@@ -18,6 +18,17 @@ module XLiveServices
             namespace + configurationName + '/' + name
         end
 
+        def self.CleanURLs(urls)
+            clean = []
+            urls.each do |url|
+                uri = URI.parse(url)
+                uri.query = nil
+                uri.fragment = nil
+                clean << uri.to_s
+            end
+            clean
+        end
+
         class Serialization
             def self.Serialize(data, type)
                 serialized = {}
