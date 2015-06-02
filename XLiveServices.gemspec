@@ -23,6 +23,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'LiveIdentity', '>= 0.0.3'
   spec.add_runtime_dependency 'savon'
   spec.add_runtime_dependency 'builder'
+  spec.add_runtime_dependency 'libmspack'
 
   spec.add_development_dependency 'bundler', '~> 1.6'
   spec.add_development_dependency 'rake'
