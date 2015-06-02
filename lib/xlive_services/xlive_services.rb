@@ -41,6 +41,7 @@ module XLiveServices
         raise XLiveServicesError.new('Invalid AuthService Token!') if userAuthService.Token.nil? or userAuthService.Token.empty?
         request = HTTPI::Request.new(url)
         request.body = { :serviceType => 1, :titleId => 0 }
+        request.headers['Content-Type'] = 'application/x-www-form-urlencoded'
         request.headers['Authorization'] = "WLID1.0 #{userAuthService.Token}"
         request.headers['X-ClientType']  = 'panorama'
         response = HTTPI.post(request)
