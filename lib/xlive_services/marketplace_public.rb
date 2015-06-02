@@ -12,6 +12,7 @@ module XLiveServices
         global :convert_response_tags_to, :camelcase
         global :soap_version, 2
         global :namespaces, { 'xmlns:a' => 'http://www.w3.org/2005/08/addressing' }
+        global :ssl_version, :SSLv23
 
         ConfigurationName = 'IMarketplacePublic'
 
