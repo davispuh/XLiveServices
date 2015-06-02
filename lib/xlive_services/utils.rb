@@ -33,6 +33,17 @@ module XLiveServices
                 end
                 serialized
             end
+
+            def self.Deserialize(data, type)
+                unserialized = nil
+                case type
+                when 'string[]'
+                    unserialized = data['string']
+                    unserialized = [] unless unserialized
+                    unserialized = [unserialized] unless unserialized.is_a?(Array)
+                end
+                unserialized
+            end
         end
     end
 end
