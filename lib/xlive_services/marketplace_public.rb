@@ -43,12 +43,12 @@ module XLiveServices
 
         def GetPurchaseHistory(locale, pageNum = 1, orderBy = SortField::Title)
             client.globals[:soap_header] = GetHeader(__callee__)
-            client.call __callee__, message: { locale: locale, pageNum: pageNum, orderBy: Utils::Serialization::Serialize('enum', orderBy) }
+            client.call __callee__, message: { locale: locale, pageNum: pageNum, orderBy: Utils::Serialization::Serialize(orderBy, 'enum') }
         end
 
         def ReadUserSettings(titleID, settings)
             client.globals[:soap_header] = GetHeader(__callee__)
-            client.call __callee__, message: { titleID: titleID, settings: Utils::Serialization::Serialize('uint[]', settings) }
+            client.call __callee__, message: { titleID: titleID, settings: Utils::Serialization::Serialize(settings, 'uint[]') }
         end
 
         def GetOfferDetailsPublic(locale, offerGUID)
@@ -73,7 +73,7 @@ module XLiveServices
 
         def GetMediaUrls(urls, offerGUID)
             client.globals[:soap_header] = GetHeader(__callee__)
-            client.call __callee__, message: { urls: Utils::Serialization::Serialize('string[]', urls), offerID: offerGUID }
+            client.call __callee__, message: { urls: Utils::Serialization::Serialize(urls, 'string[]'), offerID: offerGUID }
         end
 
     end

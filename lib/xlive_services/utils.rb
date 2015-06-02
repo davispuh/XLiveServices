@@ -19,7 +19,7 @@ module XLiveServices
         end
 
         class Serialization
-            def self.Serialize(type, data)
+            def self.Serialize(data, type)
                 serialized = {}
                 case type
                 when 'enum'
