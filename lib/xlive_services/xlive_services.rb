@@ -4,6 +4,7 @@ require 'live_identity'
 
 module XLiveServices
     class XLiveServicesError < RuntimeError; end
+    class XLiveServicesUnauthorized < XLiveServicesError; end
 
     def self.GetLcwConfig(locale = 'en-US')
         raise XLiveServicesError.new('Invalid Locale!') if locale.nil? or locale.empty?
@@ -45,7 +46,11 @@ module XLiveServices
         request.headers['Authorization'] = "WLID1.0 #{userAuthService.Token}"
         request.headers['X-ClientType']  = 'panorama'
         response = HTTPI.post(request)
-        raise "Error! HTTP Status Code: #{response.code} #{response.body}" if response.error?
+        if response.error?
+            message = "Error! HTTP Status Code: #{response.code} #{response.body}"
+            raise XLiveServicesUnauthorized.new(message) if response.code == 401
+            raise XLiveServicesError.new(message)
+        end
         MultiXml.parse(response.body)
     end
 
