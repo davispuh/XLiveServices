@@ -11,9 +11,14 @@ module XLiveServices
             @Locale = 'en-US'
             @Locale = locale if locale
             @Config = XLiveServices.GetLcwConfig(@Locale)
-            @Live = LiveIdentity.new(LiveIdGUID, LiveIdVersion, :NO_UI, { :IDCRL_OPTION_ENVIRONMENT => 'Production' })
+            @Live   = nil
+            @Identity = nil
 
-            if username.nil?
+            if LiveIdentity.isAvailable?
+                @Live = LiveIdentity.new(LiveIdGUID, LiveIdVersion, :NO_UI, { :IDCRL_OPTION_ENVIRONMENT => 'Production' })
+            end
+
+            if username.nil? and @Live
                 identities = @Live.GetIdentities(LiveIdentity::PPCRL_CREDTYPE_PASSWORD)
                 @Username = identities.GetNextIdentityName
                 if !@Username
@@ -25,53 +30,77 @@ module XLiveServices
                 @Username = username
             end
 
-            @Identity = @Live.GetIdentity(@Username, :IDENTITY_SHARE_ALL)
-            if !@Identity.HasPersistedCredential?(LiveIdentity::PPCRL_CREDTYPE_MEMBERNAMEONLY)
-                @Identity.SetCredential(LiveIdentity::PPCRL_CREDTYPE_MEMBERNAMEONLY, @Username)
+            if @Live
+                @Identity = @Live.GetIdentity(@Username, :IDENTITY_SHARE_ALL)
+                if !@Identity.HasPersistedCredential?(LiveIdentity::PPCRL_CREDTYPE_MEMBERNAMEONLY)
+                   @Identity.SetCredential(LiveIdentity::PPCRL_CREDTYPE_MEMBERNAMEONLY, @Username)
+                end
             end
 
-            if password
-                @Identity.SetCredential(LiveIdentity::PPCRL_CREDTYPE_PASSWORD, password)
-            elsif !@Identity.HasPersistedCredential?(LiveIdentity::PPCRL_CREDTYPE_PASSWORD)
-                raise XLiveServicesError.new("No Password for #{@Username}!")
+            if @Identity
+                if password
+                    @Identity.SetCredential(LiveIdentity::PPCRL_CREDTYPE_PASSWORD, password)
+                elsif !@Identity.HasPersistedCredential?(LiveIdentity::PPCRL_CREDTYPE_PASSWORD)
+                    raise XLiveServicesError.new("No Password for #{@Username}!")
+                end
             end
         end
 
         def PersistCredentials
+            return false unless @Identity
             @Identity.PersistCredential(LiveIdentity::PPCRL_CREDTYPE_MEMBERNAMEONLY)
             @Identity.PersistCredential(LiveIdentity::PPCRL_CREDTYPE_PASSWORD)
         end
 
         def RemovePersistedCredentials
+            return false unless @Identity
             @Identity.RemovePersistedCredential(LiveIdentity::PPCRL_CREDTYPE_PASSWORD)
             @Identity.RemovePersistedCredential(LiveIdentity::PPCRL_CREDTYPE_MEMBERNAMEONLY)
         end
 
         def IsAuthenticated?
-            @Identity.IsAuthenticated?
+            if @Identity
+                @Identity.IsAuthenticated?
+            else
+               nil
+            end
         end
 
         def Authenticate
-            return if IsAuthenticated?()
+            return true if IsAuthenticated?()
+            return false unless @Identity
             @Identity.Authenticate(nil, :LOGONIDENTITY_ALLOW_PERSISTENT_COOKIES)
         end
 
-        def GetUserAuthService
+        def SetUserAuthService(service)
+            @GetUserAuthService = service
+        end
+
+        def GetUserAuthService()
             @GetUserAuthService ||= XLiveServices.GetUserAuthService(@Identity, @Config)
         end
 
-        def GetUserAuthorizationInfo
-            userAuthorization = XLiveServices.GetUserAuthorization(@Config[:URL][:GetUserAuth].first, GetUserAuthService())
+        def GetUserAuthorizationInfo(authURL = nil)
+            authURL = @Config[:URL][:GetUserAuth].first if authURL.nil?
+            userAuthorization = XLiveServices.GetUserAuthorization(authURL, GetUserAuthService())
             userAuthorization['GetUserAuthorizationInfo']
+        end
+
+        def SetWgxService(service)
+            @WgxService = service
         end
 
         def GetWgxService
             @WgxService ||= XLiveServices.GetWgxService(@Identity, @Config)
         end
 
-        def GetMarketplace
+        def GetMarketplace(host = nil, path = nil)
+            # Main service url https://services.gamesforwindows.com/SecurePublic/MarketPlacePublic.svc
             # Alternative service url https://services.gamesforwindows.com/SecurePublic/MarketplaceRestSecure.svc
-            XLiveServices::MarketplacePublic.new(@Config[:URL][:WgxService].first, GetWgxService())
+            uri = URI(@Config[:URL][:WgxService].first)
+            uri.host = host if host # eg. services.xboxlive.com
+            uri.path = path if path
+            XLiveServices::MarketplacePublic.new(uri.to_s, GetWgxService())
         end
     end
 end

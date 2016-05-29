@@ -12,7 +12,10 @@ module XLiveServices
         global :convert_response_tags_to, :camelcase
         global :soap_version, 2
         global :namespaces, { 'xmlns:a' => 'http://www.w3.org/2005/08/addressing' }
-        global :ssl_version, :SSLv23
+        global :open_timeout, 3
+        global :ssl_version, :TLSv1
+        global :ssl_verify_mode, :none if LiveIdentity.isAvailable?
+        global :ssl_ca_cert_file, XLiveServices::CERT_FILE
 
         ConfigurationName = 'IMarketplacePublic'
 
@@ -23,6 +26,7 @@ module XLiveServices
         end
 
         def initialize(endpoint, wgxService)
+            raise 'Invalid WgxService Token!' if wgxService.nil? or wgxService.Token.nil? or wgxService.Token.empty?
             @WgxService = wgxService
             client.globals[:endpoint] = endpoint
         end
